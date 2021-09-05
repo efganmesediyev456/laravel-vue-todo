@@ -21,13 +21,13 @@
                 </div>
             </Upload>
             <div v-if="data.imageName.length > 0">
-                <Button type="error" @click="deletePhoto(data.imageName)">sekli sil</Button>
+                <Button type="error" @click="deletePhoto(data.imageName,false)">sekli sil</Button>
                 <img style="width: 100%; height: auto;" :src="`/uploads/${data.imageName}`"  />
             </div>
         </p>
         <div slot="footer">
           <Button type="success" @click="addTag" :disabled="isLoading" :loading="isLoading">Ok</Button>
-          <Button type="error" @click="addModal=false" >No</Button>
+          <Button type="error" @click="addModalShow(false)" >No</Button>
         </div>
     </Modal>
 
@@ -38,15 +38,32 @@
     <Modal
         v-model="editModal"
         title="Edit Category Modal" :closable="false" :mask-closeable="false">
+        Category Name <br> 
         <p>
-           <Input v-model="editdata.name" placeholder="edit ucun category adi daxil et"  />
+           <Input  v-model="editdata.name" placeholder="edit ucun category adi daxil et"  />
         </p>
+        <br> IMage Upload <br>
         <P>
-            
+           <div v-if="!editShowDrag">
+                <Button type="error" @click="deletePhoto(editdata.imageName,true)">sekli sil</Button>
+                <img style="width: 100%; height: auto;" :src="`/uploads/${editdata.imageName}`"  />
+           </div>
+
+             <Upload ref="editUpload" v-if="editShowDrag"
+                :headers="{'x-csrf-token':token,'X-Requested-With':'XMLHttpRequest'}"
+                :on-success="handleSuccess"
+                :on-error="handleError"
+                type="drag"
+                action="/app/upload">
+                <div style="padding: 20px 0">
+                    <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+                    <p>Click or drag files here to upload</p>
+                </div>
+            </Upload>
         </P>
         <div slot="footer">
           <Button type="success" @click="editCat" :disabled="isEditLoading" :loading="isLoading">{{ isEditLoading ? 'Editing...':'Edit' }}</Button>
-          <Button type="error" @click="editModal=false" >No</Button>
+          <Button type="error" @click="addModalShow(true)" >No</Button>
         </div>
     </Modal>
 
@@ -94,7 +111,7 @@
                     <td>
                        
     <Button type="success" size="small" @click="editModalData(tag, i)">Edit<Icon type="ios-backspace" /></Button>
-    <Button type="error" size="small" :loading="tag.isLoading" @click="tagDelete(tag,i)">Delete<Icon type="ios-trash" /></Button>
+    <Button type="error" size="small" :loading="tag.isLoading" @click="catDelete(tag,i)">Delete<Icon type="ios-trash" /></Button>
                     
                     </td>
                   </tr>
@@ -140,7 +157,9 @@ export default {
       
       editdata:{
           name:'',
+          imageName:'',
       },
+      editShowDrag:false,
       addModal:false,
       isLoading:false,
       isEditLoading:false,
@@ -196,10 +215,12 @@ methods:{
   },
 
   async editCat(){
+    
     this.isEditLoading=true;
+    
     let _this = this
    
-    const rest= await this.callApi('post','/app/tags_edit',this.editdata).catch(function (error) {
+    const rest= await this.callApi('post','/app/cats_edit',this.editdata).catch(function (error) {
      
     if (error.response.status==422) {
       _this.i(error.response.data.errors.value[0],'Xeta');
@@ -207,33 +228,40 @@ methods:{
     });
     if(rest.status===200){
       this.tags[this.index].name=this.editdata.name;
+        this.tags[this.index].image=this.editdata.imageName;
         this.s('Ugurla deyisdirildi','Bravo');
         this.isEditLoading=false;
         this.editModal=false;
     } 
-
-
+  },
+  addModalShow(value){
+    if(value){
+      this.editModal=false;
+      this.editShowDrag=false;
+    }else{
+      this.addModal=false;
+    }
   },
   addModalFunc(){
         this.addModal=true;
         this.data.imageName='';
   },
   editModalData(tag, i){
-    
+
     this.index=i;
-    
     let obj={
       id:tag.id,
       name:tag.name,
+      imageName:tag.image
     }
     this.editdata=obj;
     this.editModal=true;
   },
 
-  async tagDelete(tag, i){
+  async catDelete(tag, i){
       if(!confirm('eminsenmi???')) return;
       this.$set(tag,'isLoading',true);
-      const rest=await this.callApi('post','/tag/delete',tag);
+      const rest=await this.callApi('post','/cat/delete',tag);
     if(rest.status===200){
         this.tags.splice(i,1);
         this.s('Ugurla silindi','Bravo');
@@ -242,18 +270,33 @@ methods:{
 
   },
   handleSuccess(res, file){
-      this.data.imageName=res;
+    this.editShowDrag=true;
+    this.data.imageName=res;
+    this.editdata.imageName=res;
+    this.editShowDrag=false;
+    
 
   },
 
   handleError(res,file){
        this.e(file.errors.file[0],'Xeta');
   },
-  async deletePhoto(data){
+  async deletePhoto(data,iseditoradd){
+  
+    
       const test=await this.callApi('post','/delete/photo',{imageName:data});
+      
       if(test.status==200){
-          this.data.imageName='';
-          this.$refs.upload.clearFiles();
+        
+        if(iseditoradd){
+          this.editdata.imageName='';
+            this.editShowDrag=true;
+        }else{
+             this.data.imageName='';
+              this.$refs.upload.clearFiles();
+        }
+         
+         
       }
   }
   

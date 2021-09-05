@@ -51,6 +51,12 @@ class TestController extends Controller
     public function get_categories(){
         return Category::orderBy('id','desc')->get();
     }
+    public function cats_edit(Request $request){
+        return Category::whereId($request->id)->update([
+            'name'=>$request->name,
+            'image'=>$request->imageName,
+    ]);
+    }
     public function tags_edit(Request $request){
         return Tag::whereId($request->id)->update([
                 'name'=>$request->name,
@@ -59,7 +65,6 @@ class TestController extends Controller
     public function delete_photo(Request $request){
         $imageName=$request->imageName;
         $path=public_path('uploads/'.$imageName);
-      
         if(file_exists($path)){
             @unlink($path);
             return 'ok';
@@ -69,5 +74,9 @@ class TestController extends Controller
     public function tags_delete(Request $request){
         return Tag::whereId($request->id)->delete();
     }
-    
+    public function cats_delete(Request $request){
+        $request->imageName=$request->image;
+        $this->delete_photo($request);
+        return Category::whereId($request->id)->delete();
+    }
 }

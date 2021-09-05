@@ -19,7 +19,12 @@ Route::post('/app/cats_create',[App\Http\Controllers\TestController::class,'cats
 Route::get('app/get_tags',[App\Http\Controllers\TestController::class,'get_tags']);
 Route::get('app/get_categories',[App\Http\Controllers\TestController::class,'get_categories']);
 Route::post('/app/tags_edit',[App\Http\Controllers\TestController::class,'tags_edit']);
+Route::post('/app/cats_edit',[App\Http\Controllers\TestController::class,'cats_edit']);
+
+
 Route::post('/tag/delete',[App\Http\Controllers\TestController::class,'tags_delete']);
+Route::post('/cat/delete',[App\Http\Controllers\TestController::class,'cats_delete']);
+
 Route::post('/app/upload',[App\Http\Controllers\TestController::class,'upload']);
 Route::post('/delete/photo',[App\Http\Controllers\TestController::class,'delete_photo']);
 

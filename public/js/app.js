@@ -1992,6 +1992,23 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   data: function data() {
     return {
@@ -2000,8 +2017,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         imageName: ''
       },
       editdata: {
-        name: ''
+        name: '',
+        imageName: ''
       },
+      editShowDrag: false,
       addModal: false,
       isLoading: false,
       isEditLoading: false,
@@ -2092,7 +2111,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 _this4.isEditLoading = true;
                 _this = _this4;
                 _context2.next = 4;
-                return _this4.callApi('post', '/app/tags_edit', _this4.editdata)["catch"](function (error) {
+                return _this4.callApi('post', '/app/cats_edit', _this4.editdata)["catch"](function (error) {
                   if (error.response.status == 422) {
                     _this.i(error.response.data.errors.value[0], 'Xeta');
                   }
@@ -2103,6 +2122,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
                 if (rest.status === 200) {
                   _this4.tags[_this4.index].name = _this4.editdata.name;
+                  _this4.tags[_this4.index].image = _this4.editdata.imageName;
 
                   _this4.s('Ugurla deyisdirildi', 'Bravo');
 
@@ -2118,6 +2138,14 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }, _callee2);
       }))();
     },
+    addModalShow: function addModalShow(value) {
+      if (value) {
+        this.editModal = false;
+        this.editShowDrag = false;
+      } else {
+        this.addModal = false;
+      }
+    },
     addModalFunc: function addModalFunc() {
       this.addModal = true;
       this.data.imageName = '';
@@ -2126,12 +2154,13 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       this.index = i;
       var obj = {
         id: tag.id,
-        name: tag.name
+        name: tag.name,
+        imageName: tag.image
       };
       this.editdata = obj;
       this.editModal = true;
     },
-    tagDelete: function tagDelete(tag, i) {
+    catDelete: function catDelete(tag, i) {
       var _this5 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee3() {
@@ -2151,7 +2180,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 _this5.$set(tag, 'isLoading', true);
 
                 _context3.next = 5;
-                return _this5.callApi('post', '/tag/delete', tag);
+                return _this5.callApi('post', '/cat/delete', tag);
 
               case 5:
                 rest = _context3.sent;
@@ -2171,12 +2200,15 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }))();
     },
     handleSuccess: function handleSuccess(res, file) {
+      this.editShowDrag = true;
       this.data.imageName = res;
+      this.editdata.imageName = res;
+      this.editShowDrag = false;
     },
     handleError: function handleError(res, file) {
       this.e(file.errors.file[0], 'Xeta');
     },
-    deletePhoto: function deletePhoto(data) {
+    deletePhoto: function deletePhoto(data, iseditoradd) {
       var _this6 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default().mark(function _callee4() {
@@ -2194,9 +2226,14 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 test = _context4.sent;
 
                 if (test.status == 200) {
-                  _this6.data.imageName = '';
+                  if (iseditoradd) {
+                    _this6.editdata.imageName = '';
+                    _this6.editShowDrag = true;
+                  } else {
+                    _this6.data.imageName = '';
 
-                  _this6.$refs.upload.clearFiles();
+                    _this6.$refs.upload.clearFiles();
+                  }
                 }
 
               case 4:
@@ -67991,7 +68028,7 @@ var render = function() {
                       attrs: { type: "error" },
                       on: {
                         click: function($event) {
-                          return _vm.deletePhoto(_vm.data.imageName)
+                          return _vm.deletePhoto(_vm.data.imageName, false)
                         }
                       }
                     },
@@ -68032,7 +68069,7 @@ var render = function() {
                   attrs: { type: "error" },
                   on: {
                     click: function($event) {
-                      _vm.addModal = false
+                      return _vm.addModalShow(false)
                     }
                   }
                 },
@@ -68061,6 +68098,9 @@ var render = function() {
           }
         },
         [
+          _vm._v("\n      Category Name "),
+          _c("br"),
+          _vm._v(" "),
           _c(
             "p",
             [
@@ -68078,7 +68118,80 @@ var render = function() {
             1
           ),
           _vm._v(" "),
-          _c("P"),
+          _c("br"),
+          _vm._v(" IMage Upload "),
+          _c("br"),
+          _vm._v(" "),
+          _c(
+            "P",
+            [
+              !_vm.editShowDrag
+                ? _c(
+                    "div",
+                    [
+                      _c(
+                        "Button",
+                        {
+                          attrs: { type: "error" },
+                          on: {
+                            click: function($event) {
+                              return _vm.deletePhoto(
+                                _vm.editdata.imageName,
+                                true
+                              )
+                            }
+                          }
+                        },
+                        [_vm._v("sekli sil")]
+                      ),
+                      _vm._v(" "),
+                      _c("img", {
+                        staticStyle: { width: "100%", height: "auto" },
+                        attrs: { src: "/uploads/" + _vm.editdata.imageName }
+                      })
+                    ],
+                    1
+                  )
+                : _vm._e(),
+              _vm._v(" "),
+              _vm.editShowDrag
+                ? _c(
+                    "Upload",
+                    {
+                      ref: "editUpload",
+                      attrs: {
+                        headers: {
+                          "x-csrf-token": _vm.token,
+                          "X-Requested-With": "XMLHttpRequest"
+                        },
+                        "on-success": _vm.handleSuccess,
+                        "on-error": _vm.handleError,
+                        type: "drag",
+                        action: "/app/upload"
+                      }
+                    },
+                    [
+                      _c(
+                        "div",
+                        { staticStyle: { padding: "20px 0" } },
+                        [
+                          _c("Icon", {
+                            staticStyle: { color: "#3399ff" },
+                            attrs: { type: "ios-cloud-upload", size: "52" }
+                          }),
+                          _vm._v(" "),
+                          _c("p", [
+                            _vm._v("Click or drag files here to upload")
+                          ])
+                        ],
+                        1
+                      )
+                    ]
+                  )
+                : _vm._e()
+            ],
+            1
+          ),
           _vm._v(" "),
           _c(
             "div",
@@ -68103,7 +68216,7 @@ var render = function() {
                   attrs: { type: "error" },
                   on: {
                     click: function($event) {
-                      _vm.editModal = false
+                      return _vm.addModalShow(true)
                     }
                   }
                 },
@@ -68210,7 +68323,7 @@ var render = function() {
                                     },
                                     on: {
                                       click: function($event) {
-                                        return _vm.tagDelete(tag, i)
+                                        return _vm.catDelete(tag, i)
                                       }
                                     }
                                   },
